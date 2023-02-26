@@ -11,3 +11,53 @@ This guide is based on the [hibernate article](https://wiki.archlinux.org/index.
   - `HOOKS="base udev resume autodetect ...`
   - rebuild the initramfs `mkinitcpio -p linux`
 - check if everything works: `systemctl hibernate`
+
+
+Conf to check:
+
+/etc/systemd/sleep.conf
+/etc/systemd/logind.conf
+
+
+If I want suspend-then-hibernate, there is a problem in systemd 252. In 252 in goes to hibernate ONLY in case is battery less that 5 %.
+
+I want it work after fixed amount of time. So, I downgraded it to version 251. How to do it:
+
+
+```bash
+# in case I do not have it locally
+wget https://archive.archlinux.org/packages/s/systemd/systemd-251-1-x86_64.pkg.tar.zst
+wget https://archive.archlinux.org/packages/s/systemd/systemd-251-1-x86_64.pkg.tar.zst.sig
+gpg --keyserver keyserver.ubuntu.com --recv-keys 0x9741E8AC
+gpg --verify systemd-251-1-x86_64.pkg.tar.zst.sig
+sudo pacman -U --needed --noconfirm systemd-251-1-x86_64.pkg.tar.zst
+
+# from cache
+ls /var/cache/pacman/pkg/systemd-*
+sudo pacman -U /path/to/cached/packages
+
+# check version
+systemctl --version
+```
+
+```bash
+# /etc/systemd/sleep.conf
+[Sleep]
+AllowSuspend=yes
+AllowHibernation=yes
+AllowSuspendThenHibernate=yes
+AllowHybridSleep=yes
+SuspendMode=suspend
+SuspendState=mem standby freeze
+HibernateMode=platform shutdown
+HibernateState=disk
+HybridSleepMode=suspend platform shutdown
+HybridSleepState=disk
+HibernateDelaySec=15min
+
+# /etc/systemd/logind.conf
+[Login]
+HandleLidSwitch=suspend-then-hibernate
+HandleLidSwitchExternalPower=suspend-then-hibernate
+HandleLidSwitchDocked=suspend-then-hibernate
+```
