@@ -19,6 +19,9 @@ Conf to check:
 /etc/systemd/logind.conf
 
 
+[Arch forum discussion](https://bbs.archlinux.org/viewtopic.php?id=281373)  
+[github issue](https://github.com/systemd/systemd/issues/25269)
+
 If I want suspend-then-hibernate, there is a problem in systemd 252. In 252 in goes to hibernate ONLY in case is battery less that 5 %.
 
 I want it work after fixed amount of time. So, I downgraded it to version 251. How to do it:
