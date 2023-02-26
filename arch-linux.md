@@ -12,6 +12,14 @@ In fdisk, "p" for primary partition (if using MBR instead of GPT)
 In fdisk, "t" to change partition type
 In fdisk, "w" (write table to disk)
 
+I need to create a portitions:
+550M - for EFI
+Mb some for swap 
+Else for system
+Change types for 550sized partition to EFI
+Change types swap to swap
+Big partition just linux
+
 Make filesystem:
 mkfs.fat -F32 /dev/sda1
 mkswap /dev/sda2
@@ -21,6 +29,7 @@ mkfs.ext4 /dev/sda3
 Base Install:
 mount /dev/sda3 /mnt (mounts it to mnt on live image)
 pacstrap /mnt base linux linux-firmware
+# in case of keys error pacman -S archlinux-keyring
 genfstab -U /mnt TWO GREATER THAN SIGNS /mnt/etc/fstab (YouTube doesn't allow angle brackets)
 
 Chroot:
@@ -48,7 +57,7 @@ pacman -S grub
 pacman -S  efibootmgr dosfstools os-prober mtools (if doing UEFI)
 mkdir /boot/EFI (if doing UEFI)
 mount /dev/sda1 /boot/EFI  #Mount FAT32 EFI partition (if doing UEFI)
-grub-install --target=x86_64-efi  --bootloader-id=grub_uefi --efi-directory=/boot/EFI --recheck (if doing UEFI)
+grub-install --target=x86_64-efi  --bootloader-id=grub_uefi --efi-directory=/boot/EFI --recheck (if doing UEFI) [--no-nvram --removable this help me last time]
 grub-mkconfig -o /boot/grub/grub.cfg
 
 Networking:
@@ -58,7 +67,9 @@ systemctl enable NetworkManager
 
 After install
 
-sudo pacman -S nvidia xorg xorg-xinit kitty stow firefox kitty i3-gaps i3blocks rofi base-devel slop git openssh
+sudo pacman -S nvidia xorg xorg-xinit stow firefox kitty i3-gaps i3blocks rofi base-devel slop git openssh xclip networkmanager-openvpn network-manager-applet polkit noto-fonts
+
+[In case of choice pipewire-jack]
 
 cp /etc/X11/xinit/xinitrc /home/$USER/.xinitrc
 
