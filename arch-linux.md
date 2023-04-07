@@ -69,6 +69,9 @@ After install
 
 sudo pacman -S nvidia xorg xorg-xinit stow firefox kitty i3-gaps i3blocks rofi base-devel slop git openssh xclip networkmanager-openvpn network-manager-applet polkit noto-fonts
 
+-last time I had issue audio, and it helped me sudo pacman -S [pipewire-media-session]
+[Related issue](https://bbs.archlinux.org/viewtopic.php?id=283990)
+
 [In case of choice pipewire-jack]
 
 cp /etc/X11/xinit/xinitrc /home/$USER/.xinitrc
