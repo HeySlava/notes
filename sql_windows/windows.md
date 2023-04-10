@@ -225,7 +225,7 @@ window w as (order by salary)
 order by salary, id;
 ```
 
-Вот что делает cume_dist() :
+Вот что делает `cume_dist()` :
 
 - Располагает записи в порядке, указанном в order by окна (в нашем случае — по возрастанию зарплаты).
 - Находит текущую запись в общем ряду (зарплату текущего сотрудника среди всех зарплат).
@@ -237,3 +237,40 @@ cume_dist = количество записей ≤ текущей / общее 
 ```
 
 В результате `cume_dist` возвращает процент записей со значением ≤ текущего (процент людей, которые получают такую же или меньшую зарплату).
+
+
+### Фреймы
+
+
+В общем виде определение фрейма выглядит так:
+
+```bash
+ROWS BETWEEN frame_start AND frame_end
+```
+
+
+Начало фрейма (frame_start) может быть:
+- `current row` — начиная с текущей строки;
+- `N preceding `— начиная с N-й строки перед текущей;
+- `N following` — начиная с N-й строки после текущей;
+- `unbounded preceding` — начиная с границы секции.
+
+Аналогично, конец фрейма (frame_end) может быть:
+- `current row` — начиная с текущей строки;
+- `N preceding `— начиная с N-й строки перед текущей;
+- `N following` — начиная с N-й строки после текущей;
+- `unbounded preceding` — начиная с границы секции.
+
+
+
+#### GROUPS-фреймы
+```bash
+ROWS BETWEEN frame_start AND frame_end
+```
+
+На самом деле, кроме фрейма по строкам (ROWS) бывают еще фреймы по группам (GROUPS) и диапазону (RANGE):
+```bash
+ROWS BETWEEN frame_start AND frame_end
+GROUPS BETWEEN frame_start AND frame_end
+RANGE BETWEEN frame_start AND frame_end
+```
