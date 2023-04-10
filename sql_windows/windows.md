@@ -172,3 +172,68 @@ window w as (
 )
 order by year, month;
 ```
+
+
+```sql
+-- Посчитаем доходы и расходы по месяцам нарастающим итогом (кумулятивно)
+select
+  year, month, income, expense,
+  sum(income) over w as t_income,
+  sum(expense) over w as t_expense,
+  (sum(income) over w) - (sum(expense) over w) as t_profit
+from expenses
+window w as (
+  order by year, month
+  rows between unbounded preceding and current row
+)
+order by year, month;
+```
+
+
+```sql
+-- Мы хотим посчитать фонд оплаты труда нарастающим итогом независимо для каждого департамента:
+--  │   name   │ department │ salary │ total │
+-- Сортировка результата: department, salary, id
+
+select id, name, department, salary
+  , sum(salary) over w as total
+from employees
+window w as (
+  partition by department
+  order by salary
+  rows between unbounded preceding and current row
+)
+order by department, salary, id;
+```
+
+
+### Фрейм по умолчанию
+
+![alter text](https://kapitonov.tech/img/68b6d4cbdf0430e.png)
+
+
+
+### cume_dist()
+
+
+```sql
+select
+  name, salary,
+  cume_dist() over w as perc
+from employees
+window w as (order by salary)
+order by salary, id;
+```
+
+Вот что делает cume_dist() :
+
+- Располагает записи в порядке, указанном в order by окна (в нашем случае — по возрастанию зарплаты).
+- Находит текущую запись в общем ряду (зарплату текущего сотрудника среди всех зарплат).
+- Считает, сколько записей ≤ текущей по значению столбца из order by (сколько людей получают такую же или меньшую зарплату).
+- Делит на общее количество записей (на количество сотрудников).
+
+```bash
+cume_dist = количество записей ≤ текущей / общее количество записей
+```
+
+В результате `cume_dist` возвращает процент записей со значением ≤ текущего (процент людей, которые получают такую же или меньшую зарплату).
