@@ -24,10 +24,15 @@ rank() - при ранге делает пропуски в нумерации.
 | 2           | 2 | 15 | 
 | 3           | 4 | 20 | 
 
+![rank vs dense_rank](https://kapitonov.tech/img/8f9e67417b618fd.png)
+
 
 ntile(n) - разбивает на n групп, первые группы будут больше при неравном количестве
 
 ```bash
+-- Есть таблица сотрудников employees.
+-- В компании работают сотрудники из Москвы и Самары.
+-- Мы хотим разбить их на две группы по зарплате в каждом из городов
 select
   ntile(3) over w as tile,
   name, department, salary
@@ -59,13 +64,51 @@ order by salary desc, id;
 ```bash
 rows between X preceding and Y following
 ```
+Где `X` — количество строк перед текущей, а `Y` — количество строк после текущей:
+Если указать вместо X или Y значение `unbounded` — это значит «граница секции»:
+Если указать вместо `X preceding` или `Y following` значение `current row` — это значит «текущая запись»:
+Фрейм никогда не выходит за границы секции, если столкнулся с ней — обрезается:
 
 Размер секции фиксирован  
 Размер фрейма зависит от текущей записи. Конец фрейма = последняя запись со значением равным текущему.
+Секция фиксирована, фрейм же зависит от текущей записи и постоянно меняется:
+
+![alter text](https://kapitonov.tech/img/395abf759d06ef9.png)
+
 
 Результат last_value() для записи Леонид.
 
 ![alter text](https://kapitonov.tech/img/a23df2740bfc2da.png)
+
+
+```bash
+-- Есть таблица сотрудников employees. Мы хотим для каждого сотрудника увидеть, сколько процентов составляет его зарплата от максимальной в городе:
+-- Сортировка результата: city, salary
+
+select
+  name, city, salary,
+  round(
+  salary * 100.0 / (last_value(salary) over w)
+  ) as percent
+from employees
+window w as (
+  partition by city
+  order by salary
+  rows between unbounded preceding and unbounded following
+)
+order by city, salary, id;
+```
+
+
+Подытожим принцип, по которому работают `first_value()` и `last_value()`:
+
+- Есть окно, которое состоит из одной или нескольких секций (partition by department).
+- Внутри секции записи упорядочены по конкретному столбцу (order by salary).
+- У каждой записи в секции свой фрейм. По умолчанию начало фрейма совпадает с началом секции, а конец для каждой записи свой.
+- Конец фрейма можно приклеить к концу секции, чтобы фрейм в точности совпадал с секцией.
+- Функция first_value() возвращает значение из первой строки фрейма.
+- Функция last_value() возвращает значение из последней строки фрейма.
+
 
 ## Агрегация
 
@@ -90,4 +133,42 @@ window w as (
   partition by department
   order by salary desc
 )
+```
+
+
+```sql
+-- Есть таблица сотрудников employees. Мы хотим для каждого сотрудника увидеть:
+-- сколько человек трудится в его отделе (emp_cnt);
+-- какая средняя зарплата по отделу (sal_avg);
+-- на сколько процентов отклоняется его зарплата от средней по отделу (diff).
+-- department, salary, id
+
+select
+  name, department, salary,
+  count(*) over w emp_cnt,
+  round(avg(salary) over w) sal_avg,
+  round(
+    100.0 * (salary - avg(salary) over w) / avg(salary) over w
+  ) as diff
+from employees
+window w as (
+  partition by department
+)
+order by department, salary, id;
+```
+
+
+```sql
+-- Есть таблица доходов-расходов expenses. Мы хотим рассчитать скользящее среднее по доходам за предыдущий и текущий месяц:
+-- year │ month │ income │ roll_avg
+-- Сортировка результата: year, month
+
+select year, month, income,
+  avg(income) over w as roll_avg
+from expenses
+window w as (
+  order by year, month
+  rows between 1 preceding and current row
+)
+order by year, month;
 ```
