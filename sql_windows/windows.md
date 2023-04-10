@@ -1,3 +1,6 @@
+# [Оконные функции SQL](https://stepik.org/course/95367?auth=login)
+
+
 ## Ранжирование
 
 dense_rank() - при ранге не делает пропусков в нумерации.
@@ -274,3 +277,29 @@ ROWS BETWEEN frame_start AND frame_end
 GROUPS BETWEEN frame_start AND frame_end
 RANGE BETWEEN frame_start AND frame_end
 ```
+Разница в том, что rows-фрейм оперирует индивидуальными записями, а groups-фрейм — группами записей, у которых одинаковое значение столбца order by (в данном случае — одинаковый департамент):
+
+
+#### RANGE-фреймы
+
+![alter text](https://kapitonov.tech/img/61f607423184a2b.png)
+
+
+
+1. **Только один столбец в order by**
+
+Поскольку range-фрейм динамически рассчитывается по вхождению в диапазон `between .. and ..`, то в order by должен быть ровно один столбец.
+2. **Только числа или даты для N preceding / following**
+Условия `N preceding` и `N following` работают только для числовых столбцов и столбцов с датами.
+
+3. **current row — как у groups-фрейма**
+
+Условие `current row` для range-фрейма работает так же, как для groups-фрейма — включает строки с одинаковым значением столбца из order by. Условия `unbounded preceding` и `unbounded following` для всех типов фреймов работают одинаково — включает строки от начала секции (unbounded preceding) и до конца секции (unbounded following).
+
+
+![alter text](https://kapitonov.tech/img/3b1b87880cc355b.png)
+![alter text](https://kapitonov.tech/img/f259ace6d5c2f32.png)
+![alter text](https://kapitonov.tech/img/26f1e7bf004034f.png)
+
+
+
