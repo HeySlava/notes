@@ -297,9 +297,33 @@ RANGE BETWEEN frame_start AND frame_end
 Условие `current row` для range-фрейма работает так же, как для groups-фрейма — включает строки с одинаковым значением столбца из order by. Условия `unbounded preceding` и `unbounded following` для всех типов фреймов работают одинаково — включает строки от начала секции (unbounded preceding) и до конца секции (unbounded following).
 
 
+#### Границы фрейма
 ![alter text](https://kapitonov.tech/img/3b1b87880cc355b.png)
 ![alter text](https://kapitonov.tech/img/f259ace6d5c2f32.png)
 ![alter text](https://kapitonov.tech/img/26f1e7bf004034f.png)
 
 
+#### Exclude
 
+Допустим, мы хотим понять, как изменится средняя зарплата по организации, если уволить того или иного сотрудника.
+
+```sql
+select
+  name, salary,
+  round(avg(salary) over w) as "avg"
+from employees
+window w as (
+  rows between unbounded preceding and unbounded following
+  exclude current row
+)
+order by salary, id;
+```
+
+**Виды исключений**
+
+Стандарт SQL предусматривает четыре разновидности EXCLUDE:
+
+- EXCLUDE NO OTHERS. Ничего не исключать. Вариант по умолчанию: если явно не указать exclude, сработает именно он.
+- EXCLUDE CURRENT ROW. Исключить текущую запись (как мы сделали на предыдущем шаге с сотрудником).
+- EXCLUDE GROUP. Исключить текущую запись и все равные ей (по значению столбцов из order by).
+- EXCLUDE TIES. Оставить текущую запись, но исключить равные ей.
