@@ -327,3 +327,27 @@ order by salary, id;
 - EXCLUDE CURRENT ROW. Исключить текущую запись (как мы сделали на предыдущем шаге с сотрудником).
 - EXCLUDE GROUP. Исключить текущую запись и все равные ей (по значению столбцов из order by).
 - EXCLUDE TIES. Оставить текущую запись, но исключить равные ей.
+
+
+#### Filter
+
+**FILTER** работает как обычное условие WHERE, но фильтрует не все записи запроса, а только фрейм для конкретной оконной функции.
+
+Пример:
+
+```sql
+select
+  name, department, salary,
+  sum(salary) over () as "база",
+  sum(salary) over w as "+0%",
+  sum(salary*1.1) over w as "+10%",
+  sum(salary*1.5)
+    filter(where department <> 'it')
+    over () as "+50% без ИТ"
+from employees
+window w as (
+  rows between unbounded preceding and unbounded following
+  exclude current row
+)
+order by id;
+```
